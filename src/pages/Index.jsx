@@ -1,10 +1,11 @@
 import { Box, Container, Flex, Heading, IconButton, Image, Input, VStack, Text, HStack, Spacer, Button, useToast } from "@chakra-ui/react";
-import { useState } from "react";
-import { FaHome, FaUser, FaUpload } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaHome, FaUser, FaUpload, FaThumbsUp } from "react-icons/fa";
 
 const Index = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [feedPhotos, setFeedPhotos] = useState([]);
+  const [likes, setLikes] = useState({});
   const toast = useToast();
 
   const handleFileChange = (event) => {
@@ -25,7 +26,9 @@ const Index = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFeedPhotos([...feedPhotos, { src: reader.result, description: "Newly uploaded photo" }]);
+      const newPhoto = { src: reader.result, description: "Newly uploaded photo" };
+      setFeedPhotos([...feedPhotos, newPhoto]);
+      setLikes({ ...likes, [newPhoto.src]: 0 });
       setSelectedFile(null);
       toast({
         title: "Upload successful.",
@@ -36,6 +39,10 @@ const Index = () => {
       });
     };
     reader.readAsDataURL(selectedFile);
+  };
+
+  const handleLike = (src) => {
+    setLikes({ ...likes, [src]: (likes[src] || 0) + 1 });
   };
 
   return (
@@ -62,6 +69,18 @@ const Index = () => {
                 <Image src={photo.src} alt={`Uploaded Photo ${index + 1}`} />
                 <Box p={4}>
                   <Text>{photo.description}</Text>
+                  <Flex align="center" mt={2}>
+                    <IconButton
+                      aria-label="Like"
+                      icon={<FaThumbsUp />}
+                      onClick={() => handleLike(photo.src)}
+                      colorScheme="blue"
+                      variant="outline"
+                      size="sm"
+                      mr={2}
+                    />
+                    <Text>{likes[photo.src] || 0} Likes</Text>
+                  </Flex>
                 </Box>
               </Box>
             ))}
